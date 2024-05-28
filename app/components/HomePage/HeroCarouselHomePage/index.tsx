@@ -12,6 +12,7 @@ import EyeSvg from "@/public/assets/eye-fill.svg"
 import EyeSlashSvg from "@/public/assets/eye-slash-fill.svg"
 import { convertFromUnix } from '@/app/lib/formatDateUnix'
 import { SwiperSlide } from 'swiper/react'
+import styled from 'styled-components'
 
 const framerMotionVariants = {
     enter: (direction: number) => {
@@ -34,7 +35,7 @@ const framerMotionVariants = {
     }
 }
 
-function HeroCarousel({ animesList, isOnMobileScreen }: { animesList: ApiDefaultResult[], isOnMobileScreen: boolean }) {
+function HeroCarousel({ animesList }: { animesList: ApiDefaultResult[] }) {
 
     const [[page, direction], setPage] = useState([0, 0])
 
@@ -66,16 +67,20 @@ function HeroCarousel({ animesList, isOnMobileScreen }: { animesList: ApiDefault
         setPage([page + newDirection, newDirection]);
     };
 
-    const backgroundImageStyle = {
-        background: isOnMobileScreen ?
-            `linear-gradient(rgba(0, 0, 0, 0.05), var(--background) 100%), url(${animesList[currMediaOnScreenIndex]?.coverImage.extraLarge})`
-            :
-            `linear-gradient(rgba(0, 0, 0, 0.00), var(--background) 100%), url(${animesList[currMediaOnScreenIndex]?.bannerImage})`
-        ,
-        backgroundPosition: isOnMobileScreen ? "top" : "center",
-        backgroundSize: "cover",
-        backgroundRepeat: "no-repeat"
-    }
+    const CarouselItem = styled.li`
+
+        background: linear-gradient(rgba(0, 0, 0, 0.05), var(--background) 100%), url(${animesList[currMediaOnScreenIndex]?.coverImage.extraLarge});
+        background-position: top;
+
+        @media (min-width: 930px) {
+            background: linear-gradient(rgba(0, 0, 0, 0.00), var(--background) 100%), url(${animesList[currMediaOnScreenIndex]?.bannerImage});
+            background-position: center;
+        }
+
+        background-size: cover!important;
+        background-repeat: no-repeat!important;
+
+    `
 
     // change auto play trailer state 
     function changeAutoPlayTrailerState() {
@@ -89,16 +94,16 @@ function HeroCarousel({ animesList, isOnMobileScreen }: { animesList: ApiDefault
         <section id={styles.hero_section_container}>
 
             {/* CAROUSEL OF BCG IMG AND MEDIA TITLE*/}
-            {animesList != undefined && (
+            {animesList && (
 
-                <AnimatePresence initial={true} custom={direction} mode='sync'>
+                <AnimatePresence initial={false} custom={direction}>
 
                     <ul id="carousel" className={`${styles.carousel_container} display_flex_row`}>
 
-                        <motion.li
+                        <CarouselItem
+                            as={motion.li}
                             key={page}
                             className={styles.carousel_item}
-                            style={backgroundImageStyle}
                             custom={direction}
                             variants={framerMotionVariants}
                             initial="enter"
@@ -141,7 +146,11 @@ function HeroCarousel({ animesList, isOnMobileScreen }: { animesList: ApiDefault
                             <div className={styles.carousel_position_wrapper}>
                                 <div className={styles.item_info}>
 
-                                    <h2><Link href={`/media/${animesList[currMediaOnScreenIndex]?.id}`}>{animesList[currMediaOnScreenIndex]?.title.romaji}</Link></h2>
+                                    <h2>
+                                        <Link href={`/media/${animesList[currMediaOnScreenIndex]?.id}`}>
+                                            {animesList[currMediaOnScreenIndex]?.title.romaji}
+                                        </Link>
+                                    </h2>
 
                                     <div className={`${styles.item_info_inside} display_flex_row`}>
 
@@ -192,7 +201,7 @@ function HeroCarousel({ animesList, isOnMobileScreen }: { animesList: ApiDefault
                                 </div>
                             </div>
 
-                        </motion.li>
+                        </CarouselItem>
 
                     </ul >
 

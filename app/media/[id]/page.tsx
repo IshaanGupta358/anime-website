@@ -18,14 +18,13 @@ import MangaChaptersContainer from './components/MangaChaptersContainer'
 import * as AddToPlaylist from '@/app/components/Buttons/AddToPlaylist'
 import ScoreRating from '@/app/components/DynamicAssets/ScoreRating'
 import PlayBtn from './components/WatchPlayBtn'
-import { headers } from 'next/headers'
-import { checkDeviceIsMobile } from '@/app/lib/checkMobileOrDesktop'
 import { convertFromUnix } from '@/app/lib/formatDateUnix'
 import CommentsSection from '../../components/CommentsSection'
 import { getMediaInfo } from '@/app/api/consumetImdb'
 import { ImdbEpisode, ImdbMediaInfo } from '@/app/ts/interfaces/apiImdbInterface'
 import AddToNotificationsButton from '@/app/components/Buttons/AddToNotificationsButton'
 import MediaRelatedContainer from './components/MediaRelatedContainer'
+import BackgroundImage from './components/PageBackgroundImage'
 
 export const revalidate = 43200 // revalidate cached data every 12 hours
 
@@ -44,9 +43,6 @@ async function MediaPage({ params }: { params: { id: number } }) {
 
   const mediaInfo = await anilist.getMediaInfo({ id: params.id }) as ApiMediaResults
 
-  const isOnMobileScreen = checkDeviceIsMobile(headers()) || false
-
-  // GET MEDIA INFO ON IMDB
   const imdbMediaInfo = await getMediaInfo({ search: true, seachTitle: mediaInfo.title.romaji, releaseYear: mediaInfo.startDate.year }) as ImdbMediaInfo
 
   function getCrunchyrollEpisodes() {
@@ -112,15 +108,10 @@ async function MediaPage({ params }: { params: { id: number } }) {
     return imdbEpisodes.length || mediaInfo.episodes || "Not Available"
   }
 
-  function bcgImgBasedOnScreenDisplay() {
+  function getBcgImgBasedOnMediaFormat() {
 
-    if (isOnMobileScreen) {
-      return `linear-gradient(rgba(0, 0, 0, 0.05), var(--background) 100%), url(${mediaInfo?.coverImage?.extraLarge})`
-    }
-    else {
-      return `linear-gradient(rgba(0, 0, 0, 0.05), var(--background) 100%), url(${mediaInfo.format == "MANGA" ?
-        mediaInfo.bannerImage : randomizeBcgImg()})`
-    }
+    return mediaInfo.format == "MANGA" ? mediaInfo.bannerImage : randomizeBcgImg()
+
   }
 
   function getDate(date: { month: number, day: number, year: number }) {
@@ -139,12 +130,10 @@ async function MediaPage({ params }: { params: { id: number } }) {
   return (
     <main id={styles.container}>
 
-      {/* BANNER or BACKGROUND COLOR*/}
-      <div
-        id={styles.banner_background_container}
-        style={{ background: bcgImgBasedOnScreenDisplay() }}
-      >
-      </div>
+      <BackgroundImage
+        bcgForDesktop={getBcgImgBasedOnMediaFormat()}
+        mediaInfo={mediaInfo}
+      />
 
       <div id={styles.media_info_container} className={(imdbMediaInfo?.logos && imdbMediaInfo?.logos[0]) ? `${styles.custom_position}` : ``}>
 
@@ -202,6 +191,10 @@ async function MediaPage({ params }: { params: { id: number } }) {
             </div>
 
             <div id={styles.btns_actions_container}>
+
+              <AddToNotificationsButton
+                mediaInfo={mediaInfo}
+              />
 
               <AddToPlaylist.Button
                 mediaInfo={mediaInfo as ApiDefaultResult}
@@ -352,8 +345,8 @@ async function MediaPage({ params }: { params: { id: number } }) {
           <div id={styles.description_episodes_related_container}>
 
             {/* NEXT EPISODE */}
-            {(isOnMobileScreen == true && mediaInfo.nextAiringEpisode && mediaInfo.format != "MOVIE") && (
-              <div id={styles.next_episode_container}>
+            {(mediaInfo.nextAiringEpisode && mediaInfo.format != "MOVIE") && (
+              <div id={styles.next_episode_mobile_container}>
 
                 <h2 className={styles.heading_style}>
                   NEXT EPISODE
@@ -537,8 +530,8 @@ async function MediaPage({ params }: { params: { id: number } }) {
           <div id={styles.hype_container}>
 
             {/* NEXT EPISODE */}
-            {(isOnMobileScreen == false && mediaInfo.nextAiringEpisode && mediaInfo.format != "MOVIE") && (
-              <div id={styles.next_episode_container}>
+            {(mediaInfo.nextAiringEpisode && mediaInfo.format != "MOVIE") && (
+              <div id={styles.next_episode_desktop_container}>
 
                 <h2 className={styles.heading_style}>
                   NEXT EPISODE

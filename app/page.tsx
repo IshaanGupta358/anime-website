@@ -10,8 +10,6 @@ import MediaRankingSection from "./components/HomePage/MediaRankingSection";
 import { ApiAiringMidiaResults, ApiDefaultResult } from "./ts/interfaces/apiAnilistDataInterface";
 import { Metadata } from "next";
 import * as AddToPlaylistButton from "./components/Buttons/AddToPlaylist";
-import { checkDeviceIsMobile } from "./lib/checkMobileOrDesktop";
-import { headers } from "next/headers";
 import KeepWatchingSection from "./components/HomePage/KeepWatchingSection";
 import PopularMediaSection from "./components/HomePage/PopularMediaSection";
 
@@ -23,8 +21,6 @@ export const metadata: Metadata = {
 }
 
 export default async function Home() {
-
-  const isOnMobileScreen = checkDeviceIsMobile(headers())
 
   // section 3
   const listAnimesTrending = await anilist.getMediaForThisFormat({ type: "ANIME" }) as ApiDefaultResult[]
@@ -44,7 +40,7 @@ export default async function Home() {
 
   const randomIndexForBannerSection = Math.floor(Math.random() * (listMediasToBannerSection?.length || 10)) + 1
 
-  // section 4 data
+  // section 4
   const listMediasReleasedToday = await anilist.getReleasingByDaysRange({ type: "ANIME", days: 1, perPage: 11 }).then(
     res => ((res as ApiAiringMidiaResults[]).sort((a, b) => a.media.popularity - b.media.popularity).reverse())
   ).then(res => res.map((item) => item.media))
@@ -55,7 +51,6 @@ export default async function Home() {
       {/* HERO */}
       <HeroCarousel
         animesList={listAnimesTrendingWithBackground}
-        isOnMobileScreen={isOnMobileScreen || false}
       />
 
       {/* Keep Watching  */}

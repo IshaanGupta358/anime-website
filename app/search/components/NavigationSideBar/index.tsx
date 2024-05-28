@@ -24,7 +24,7 @@ const showUpMotion = {
 
 }
 
-function NavigationSideBar({ isMobile }: { isMobile: boolean }) {
+function NavigationSideBar() {
 
     const router = useRouter()
     const pathname = usePathname();
@@ -127,169 +127,164 @@ function NavigationSideBar({ isMobile }: { isMobile: boolean }) {
     return (
         <React.Fragment>
 
-            {isMobile && (
-                <button
-                    id={styles.btn_filters}
-                    onClick={() => setIsFiltersMenuOpen(!isFiltersMenuOpen)}
-                    data-active={isFiltersMenuOpen}
-                >
-                    {isFiltersMenuOpen ? (
-                        <>
-                            <SvgClose width={16} height={16} alt="Close" /> FILTERS
-                        </>
-                    ) : (
-                        <>
-                            <SvgFilter width={16} height={16} alt="Filter" /> FILTERS
-                        </>
-                    )}
+            <button
+                id={styles.btn_filters}
+                onClick={() => setIsFiltersMenuOpen(!isFiltersMenuOpen)}
+                data-active={isFiltersMenuOpen}
+            >
+                {isFiltersMenuOpen ? (
+                    <>
+                        <SvgClose width={16} height={16} alt="Close" /> FILTERS
+                    </>
+                ) : (
+                    <>
+                        <SvgFilter width={16} height={16} alt="Filter" /> FILTERS
+                    </>
+                )}
 
-                </button>
-            )}
+            </button>
 
             <AnimatePresence
                 initial={false}
                 mode='wait'
             >
-                {((isMobile && isFiltersMenuOpen == true) || (!isMobile && !isFiltersMenuOpen)) && (
+                <motion.div
+                    id={styles.backdrop}
+                    data-is-visible-mobile={isFiltersMenuOpen}
+                    onClick={() => setIsFiltersMenuOpen(!isFiltersMenuOpen)}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                >
+
                     <motion.div
-                        id={styles.backdrop}
-                        onClick={() => setIsFiltersMenuOpen(false)}
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
+                        onClick={(e: { stopPropagation: () => any }) => e.stopPropagation()}
+                        onScrollCapture={(e: { stopPropagation: () => any }) => e.stopPropagation()}
+                        id={styles.container}
+                        variants={showUpMotion}
+                        initial="hidden"
+                        animate="visible"
+                        data-loading={isLoading}
+                        data-active={isFiltersMenuOpen}
                     >
+                        <form className={styles.nav_container}>
 
-                        {/* SHOW IF IT IS MOBILE AND MENU IS OPEN, OR IF IS NOT MOBILE (ON DESKTOP) AND MENU IS CLOSED */}
-                        {((isMobile && isFiltersMenuOpen == true) || (!isMobile && !isFiltersMenuOpen)) && (
-                            <motion.div
-                                onClick={(e: { stopPropagation: () => any }) => e.stopPropagation()}
-                                onScrollCapture={(e: { stopPropagation: () => any }) => e.stopPropagation()}
-                                id={styles.container}
-                                variants={showUpMotion}
-                                initial="hidden"
-                                animate="visible"
-                                data-loading={isLoading}
-                                data-active={isFiltersMenuOpen}
+                            <p>GENRES</p>
+
+                            <ul>
+
+                                {SearchOptions.allGenres.map((item, key) => (
+                                    <li key={key}>
+                                        <label>
+                                            {item.name}
+                                            <input
+                                                type='checkbox'
+                                                value={item.value}
+                                                defaultChecked={searchParamsState.get("genre")?.includes(item.value)}
+                                                onClick={(e) => fetchNewResultsByQueryType("genre", e.target)}>
+                                            </input>
+                                        </label>
+                                    </li>
+                                ))}
+
+                            </ul>
+
+                        </form>
+
+                        <form className={styles.nav_container}>
+
+                            <p>YEAR</p>
+
+                            <select
+                                defaultValue={searchParamsState.get("year") ? `${searchParamsState.get("year")}` : `any`}
+                                onChange={(e) => fetchNewResultsByQueryType("year", e.target)}
                             >
-                                <form className={styles.nav_container}>
-
-                                    <p>GENRES</p>
-
-                                    <ul>
-
-                                        {SearchOptions.allGenres.map((item, key) => (
-                                            <li key={key}>
-                                                <label>
-                                                    {item.name}
-                                                    <input
-                                                        type='checkbox'
-                                                        value={item.value}
-                                                        defaultChecked={searchParamsState.get("genre")?.includes(item.value)}
-                                                        onClick={(e) => fetchNewResultsByQueryType("genre", e.target)}>
-                                                    </input>
-                                                </label>
-                                            </li>
-                                        ))}
-
-                                    </ul>
-
-                                </form>
-
-                                <form className={styles.nav_container}>
-
-                                    <p>YEAR</p>
-
-                                    <select
-                                        defaultValue={searchParamsState.get("year") ? `${searchParamsState.get("year")}` : `any`}
-                                        onChange={(e) => fetchNewResultsByQueryType("year", e.target)}
+                                <option value="any">Any</option>
+                                {simulateRange(60).map((item, key) => (
+                                    <option
+                                        key={key}
+                                        value={new Date().getFullYear() - item}
                                     >
-                                        <option value="any">Any</option>
-                                        {simulateRange(60).map((item, key) => (
-                                            <option
-                                                key={key}
-                                                value={new Date().getFullYear() - item}
-                                            >
-                                                {new Date().getFullYear() - item}
-                                            </option>
-                                        ))}
-                                    </select>
+                                        {new Date().getFullYear() - item}
+                                    </option>
+                                ))}
+                            </select>
 
-                                </form>
+                        </form>
 
-                                <form className={`${styles.nav_container} ${styles.hidden_checkbox}`}>
+                        <form className={`${styles.nav_container} ${styles.hidden_checkbox}`}>
 
-                                    <p>TYPE</p>
+                            <p>TYPE</p>
 
-                                    <ul>
-                                        {SearchOptions.allTypes.map((item, key) => (
-                                            <li key={key}>
-                                                <label>
-                                                    {item.name}
-                                                    <input
-                                                        type='checkbox'
-                                                        value={item.value}
-                                                        defaultChecked={searchParamsState.get("type")?.includes(item.value)}
-                                                        onClick={(e) => fetchNewResultsByQueryType("type", e.target)}>
-                                                    </input>
-                                                </label>
-                                            </li>
-                                        ))}
-                                    </ul>
+                            <ul>
+                                {SearchOptions.allTypes.map((item, key) => (
+                                    <li key={key}>
+                                        <label>
+                                            {item.name}
+                                            <input
+                                                type='checkbox'
+                                                value={item.value}
+                                                defaultChecked={searchParamsState.get("type")?.includes(item.value)}
+                                                onClick={(e) => fetchNewResultsByQueryType("type", e.target)}>
+                                            </input>
+                                        </label>
+                                    </li>
+                                ))}
+                            </ul>
 
-                                </form>
+                        </form>
 
-                                <form className={`${styles.nav_container} ${styles.hidden_checkbox} ${styles.hidden_checkbox2}`}>
+                        <form className={`${styles.nav_container} ${styles.hidden_checkbox} ${styles.hidden_checkbox2}`}>
 
-                                    <p>STATUS</p>
+                            <p>STATUS</p>
 
-                                    <ul>
+                            <ul>
 
-                                        {SearchOptions.allStatus.map((item, key) => (
-                                            <li key={key}>
-                                                <label>
-                                                    {item.name}
-                                                    <input
-                                                        type='checkbox'
-                                                        value={item.value}
-                                                        defaultChecked={searchParamsState.get("status")?.includes(item.value)}
-                                                        onClick={(e) => fetchNewResultsByQueryType("status", e.target)}>
-                                                    </input>
-                                                </label>
-                                            </li>
-                                        ))}
+                                {SearchOptions.allStatus.map((item, key) => (
+                                    <li key={key}>
+                                        <label>
+                                            {item.name}
+                                            <input
+                                                type='checkbox'
+                                                value={item.value}
+                                                defaultChecked={searchParamsState.get("status")?.includes(item.value)}
+                                                onClick={(e) => fetchNewResultsByQueryType("status", e.target)}>
+                                            </input>
+                                        </label>
+                                    </li>
+                                ))}
 
-                                    </ul>
+                            </ul>
 
-                                </form>
+                        </form>
 
-                                <form className={`${styles.nav_container} ${styles.hidden_checkbox} ${styles.hidden_checkbox2}`}>
+                        <form className={`${styles.nav_container} ${styles.hidden_checkbox} ${styles.hidden_checkbox2}`}>
 
-                                    <p>SEASON</p>
+                            <p>SEASON</p>
 
-                                    <ul>
+                            <ul>
 
-                                        {SearchOptions.allSeasons.map((item, key) => (
-                                            <li key={key}>
-                                                <label>
-                                                    {item.name}
-                                                    <input
-                                                        type='checkbox'
-                                                        value={item.value}
-                                                        defaultChecked={searchParamsState.get("season")?.includes(item.value)}
-                                                        onClick={(e) => fetchNewResultsByQueryType("season", e.target)}>
-                                                    </input>
-                                                </label>
-                                            </li>
-                                        ))}
+                                {SearchOptions.allSeasons.map((item, key) => (
+                                    <li key={key}>
+                                        <label>
+                                            {item.name}
+                                            <input
+                                                type='checkbox'
+                                                value={item.value}
+                                                defaultChecked={searchParamsState.get("season")?.includes(item.value)}
+                                                onClick={(e) => fetchNewResultsByQueryType("season", e.target)}>
+                                            </input>
+                                        </label>
+                                    </li>
+                                ))}
 
-                                    </ul>
+                            </ul>
 
-                                </form>
+                        </form>
 
-                            </motion.div>
-                        )}
                     </motion.div>
-                )}
+
+                </motion.div>
 
             </AnimatePresence>
         </React.Fragment>

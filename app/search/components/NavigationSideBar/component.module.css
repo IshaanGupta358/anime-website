@@ -17,6 +17,12 @@
 
 }
 
+@media(min-width: 768px) {
+    #btn_filters {
+        display: none;
+    }
+}
+
 #btn_filters[data-active=true] {
     border: 1px solid var(--brand-color);
 }
@@ -43,6 +49,12 @@
         align-items: center;
         justify-content: center;
 
+    }
+}
+
+@media(max-width: 768px) {
+    #backdrop[data-is-visible-mobile="false"] {
+        display: none !important;
     }
 }
 

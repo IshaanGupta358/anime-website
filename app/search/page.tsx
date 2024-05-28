@@ -2,8 +2,6 @@ import React from 'react'
 import styles from './page.module.css'
 import NavigationSideBar from './components/NavigationSideBar'
 import ResultsContainer from './components/ResultsContainer'
-import { headers } from 'next/headers'
-import { checkDeviceIsMobile } from '../lib/checkMobileOrDesktop'
 import { Metadata } from 'next'
 import axios from 'axios'
 
@@ -27,8 +25,6 @@ type SearchPageTypes = {
 
 async function SearchPage({ searchParams }: { searchParams: SearchPageTypes }) {
 
-    const isMobile = checkDeviceIsMobile(headers())
-
     const OFFLINE_ANIME_DATABASE = process.env.NEXT_PUBLIC_NEXT_INTERNAL_API_URL
 
     const sortedMedias = await axios.get(`${OFFLINE_ANIME_DATABASE}?${Object.entries(searchParams).map(e => e.join('=')).join('&')}`).then(res => res.data)
@@ -38,9 +34,7 @@ async function SearchPage({ searchParams }: { searchParams: SearchPageTypes }) {
 
             <div id={styles.side_nav}>
 
-                <NavigationSideBar
-                    isMobile={isMobile || false}
-                />
+                <NavigationSideBar />
 
             </div>
 

@@ -5,6 +5,7 @@ import Header from "./components/layout/header";
 import Footer from "./components/layout/footer";
 import NextTopLoader from 'nextjs-toploader';
 import { Analytics } from "@vercel/analytics/react";
+import StyledComponentsRegistry from "./lib/registry";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -32,7 +33,9 @@ export default function RootLayout({
 
         <Analytics />
 
-        {children}
+        <StyledComponentsRegistry>
+          {children}
+        </StyledComponentsRegistry>
 
         <Footer />
 

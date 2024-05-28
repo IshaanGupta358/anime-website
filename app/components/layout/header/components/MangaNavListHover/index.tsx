@@ -106,11 +106,6 @@ function MangaNavListHover() {
                                             url={media.coverImage.large}
                                         />
 
-                                        <MediaCard.SmallTag
-                                            seasonYear={media.seasonYear}
-                                            tags={media.genres[0]}
-                                        />
-
                                         <MediaCard.LinkTitle
                                             title={media.title.romaji || media.title.native}
                                             id={media.id}

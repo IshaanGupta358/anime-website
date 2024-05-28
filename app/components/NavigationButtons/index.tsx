@@ -29,7 +29,13 @@ export default function NavigationButtons({ propsFunction, buttonOptions, currVa
 
     useEffect(() => setLastValueReturned(currValue || "" || 1), [currValue])
 
-    useEffect(() => { if (buttonOptions) checkVideoSourceAvailability(buttonOptions) }, [buttonOptions])
+    useEffect(() => {
+
+        if (buttonOptions && (!gogoanimeAvailble || !aniwatchAvailable)) {
+            checkVideoSourceAvailability(buttonOptions)
+        }
+        
+    }, [buttonOptions])
 
     function handlePropsFunctionWithBtnValue(btnActionValue: string | number) {
 

@@ -7,14 +7,17 @@ import {
   MangadexMangaInfo,
   MangadexMangaPages,
 } from "@/app/ts/interfaces/mangadex";
-import manga from "@/app/api/consumet/consumetManga";
+import {
+  getClosestMangaResult,
+  getMangaChapterPages,
+  getMangaInfo,
+} from "@/app/api/consumet/consumetManga";
 import {
   MediaData,
   MediaDataFullInfo,
 } from "../../ts/interfaces/anilistMediaData";
 import ChaptersPages from "./components/ChaptersPages/index";
 import ChaptersListContainer from "./components/ChaptersListContainer";
-import { getClosestMangaResultByTitle } from "@/app/lib/dataFetch/optimizedFetchMangaOptions";
 import { stringToUrlFriendly } from "@/app/lib/convertStrings";
 import { FetchEpisodeError } from "@/app/components/MediaFetchErrorPage";
 
@@ -61,7 +64,7 @@ async function ReadChapter({
   let allAvailableChaptersList: MangadexMangaChapters[] | undefined = undefined;
   let hadFetchError = false;
 
-  const currMangaChapters = (await manga.getChapterPages({
+  const currMangaChapters = (await getMangaChapterPages({
     chapterId: searchParams.q,
   })) as MangadexMangaPages[];
 
@@ -69,19 +72,24 @@ async function ReadChapter({
     mediaInfo.title.userPreferred
   ).toLowerCase();
 
-  let mangaInfo = (await manga.getInfoFromThisMedia({
+  let mangaInfo = (await getMangaInfo({
     id: mangaTitleUrlFrindly,
   })) as MangadexMangaInfo;
 
   if (!mangaInfo) {
-    const mangaClosestResult = await getClosestMangaResultByTitle(
-      mangaTitleUrlFrindly,
-      mediaInfo
-    );
+    const mangaClosestResult = await getClosestMangaResult({
+      query: mangaTitleUrlFrindly,
+      mangaEnglishTitle: mediaInfo.title.english,
+      mangaChapters: mediaInfo.chapters || 0,
+      mangaVolumes: mediaInfo.volumes || 0,
+      mangaStartYearDate: mediaInfo.startDate.year,
+    });
 
-    mangaInfo = (await manga.getInfoFromThisMedia({
-      id: mangaClosestResult as string,
-    })) as MangadexMangaInfo;
+    if (mangaClosestResult) {
+      mangaInfo = (await getMangaInfo({
+        id: mangaClosestResult,
+      })) as MangadexMangaInfo;
+    }
 
     if (!mangaInfo) hadFetchError = true;
   }

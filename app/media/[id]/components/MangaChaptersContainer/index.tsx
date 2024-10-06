@@ -8,12 +8,14 @@ import {
 } from "@/app/ts/interfaces/mangadex";
 import BookSvg from "@/public/assets/book.svg";
 import PaginationButtons from "@/app/media/[id]/components/PaginationButtons";
-import manga from "@/app/api/consumet/consumetManga";
+import {
+  getClosestMangaResult,
+  getMangaInfo,
+} from "@/app/api/consumet/consumetManga";
 import { AnimatePresence, motion, Variants } from "framer-motion";
 import simulateRange from "@/app/lib/simulateRange";
 import MarkChapterAsReadButton from "@/app/components/Buttons/MarkChapterAsRead";
 import { MediaDataFullInfo } from "@/app/ts/interfaces/anilistMediaData";
-import { getClosestMangaResultByTitle } from "@/app/lib/dataFetch/optimizedFetchMangaOptions";
 import { stringToUrlFriendly } from "@/app/lib/convertStrings";
 import { useSearchParams } from "next/navigation";
 import ErrorPanel from "../ErrorPanel";
@@ -129,18 +131,29 @@ function MangaChaptersContainer({
       mediaInfo.title.romaji
     ).toLowerCase();
 
-    let mangaInfo = (await manga.getInfoFromThisMedia({
+    let mangaInfo = (await getMangaInfo({
       id: mangaTitleUrlFrindly,
     })) as MangadexMangaInfo;
 
     if (!mangaInfo) {
-      const mangaClosestResult = await getClosestMangaResultByTitle(
-        mangaTitleUrlFrindly,
-        mediaInfo
-      );
+      const mangaClosestResult = await getClosestMangaResult({
+        query: mangaTitleUrlFrindly,
+        mangaEnglishTitle: mediaInfo.title.english,
+        mangaChapters: mediaInfo.chapters || 0,
+        mangaVolumes: mediaInfo.volumes || 0,
+        mangaStartYearDate: mediaInfo.startDate.year,
+      });
 
-      mangaInfo = (await manga.getInfoFromThisMedia({
-        id: mangaClosestResult as string,
+      if (!mangaClosestResult) {
+        setIsLoading(false);
+
+        setCurrMangasList(null);
+
+        return;
+      }
+
+      mangaInfo = (await getMangaInfo({
+        id: mangaClosestResult,
       })) as MangadexMangaInfo;
 
       if (!mangaInfo) {

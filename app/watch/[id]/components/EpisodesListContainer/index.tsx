@@ -4,7 +4,7 @@ import styles from "./component.module.css";
 import { GogoanimeMediaEpisodes } from "@/app/ts/interfaces/gogoanimeData";
 import Link from "next/link";
 import MarkEpisodeAsWatchedButton from "@/app/components/Buttons/MarkEpisodeAsWatched";
-import { EpisodeAnimeWatch } from "@/app/ts/interfaces/aniwatchData";
+import { EpisodeAniwatch } from "@/app/ts/interfaces/aniwatchData";
 import { motion } from "framer-motion";
 import { ImdbEpisode } from "@/app/ts/interfaces/imdb";
 import { SourceType } from "@/app/ts/interfaces/episodesSource";
@@ -20,7 +20,7 @@ type ComponentTypes = {
   sourceName: SourceType["source"];
   mediaId: number;
   activeEpisodeNumber: number;
-  episodesList: GogoanimeMediaEpisodes[] | EpisodeAnimeWatch[] | ImdbEpisode[];
+  episodesList: GogoanimeMediaEpisodes[] | EpisodeAniwatch[] | ImdbEpisode[];
   episodesListOnImdb: ImdbEpisode[] | undefined;
   nextAiringEpisodeInfo?: { episode: number; airingAt: number };
   anilistLastEpisodeWatched?: number;
@@ -102,7 +102,7 @@ export default function EpisodesListContainer({
   }
 
   function getMediaIdParamByMediaSource(
-    media: EpisodeAnimeWatch | GogoanimeMediaEpisodes,
+    media: EpisodeAniwatch | GogoanimeMediaEpisodes,
     source: SourceType["source"]
   ) {
     switch (source) {
@@ -110,7 +110,7 @@ export default function EpisodesListContainer({
         return `${(media as GogoanimeMediaEpisodes).id}${searchParams.get("dub") ? `&dub=true` : ""}`;
 
       case "aniwatch":
-        return `${(media as EpisodeAnimeWatch).episodeId}${searchParams.get("dub") ? `&dub=true` : ""}`;
+        return `${(media as EpisodeAniwatch).episodeId}${searchParams.get("dub") ? `&dub=true` : ""}`;
 
       default:
         return null;
@@ -147,16 +147,16 @@ export default function EpisodesListContainer({
                 href={`/watch/${mediaId}?source=${sourceName}&episode=${(episode as GogoanimeMediaEpisodes).number}&q=${getMediaIdParamByMediaSource(episode as GogoanimeMediaEpisodes, sourceName)}`}
               >
                 {sourceName == "aniwatch" &&
-                  (episode as EpisodeAnimeWatch).isFiller && (
-                  <small className={styles.filler_alert_text}>Filler</small>
-                )}
+                  (episode as EpisodeAniwatch).isFiller && (
+                    <small className={styles.filler_alert_text}>Filler</small>
+                  )}
 
                 <h4>
                   {sourceName == "gogoanime"
                     ? episodesListOnImdb
                       ? episodesListOnImdb[key].title
                       : `Episode ${(episode as GogoanimeMediaEpisodes).number}`
-                    : (episode as EpisodeAnimeWatch).title}
+                    : (episode as EpisodeAniwatch).title}
                 </h4>
               </Link>
 

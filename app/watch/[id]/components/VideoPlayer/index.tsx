@@ -29,11 +29,11 @@ import {
   GogoanimeMediaEpisodes,
 } from "@/app/ts/interfaces/gogoanimeData";
 import {
-  EpisodeAnimeWatch,
-  EpisodeLinksAnimeWatch,
+  EpisodeAniwatch,
+  EpisodeLinksAniwatch,
 } from "@/app/ts/interfaces/aniwatchData";
 import gogoanime from "@/app/api/consumet/consumetGoGoAnime";
-import aniwatch from "@/app/api/aniwatch";
+import aniwatch from "@/app/api/aniwatch/aniwatch";
 import { useRouter, useSearchParams } from "next/navigation";
 import { SourceType } from "@/app/ts/interfaces/episodesSource";
 import SkipSvg from "@/public/assets/chevron-double-right.svg";
@@ -45,12 +45,12 @@ import anilistUsers from "@/app/api/anilist/anilistUsers";
 type VideoPlayerType = {
   mediaSource: SourceType["source"];
   mediaInfo: MediaDataFullInfo;
-  mediaEpisodes?: GogoanimeMediaEpisodes[] | EpisodeAnimeWatch[];
+  mediaEpisodes?: GogoanimeMediaEpisodes[] | EpisodeAniwatch[];
   videoInfo: {
     urlSource: string;
     currentLastStop?: string;
     subtitleLang: string;
-    subtitlesList?: EpisodeLinksAnimeWatch["tracks"] | undefined;
+    subtitlesList?: EpisodeLinksAniwatch["tracks"] | undefined;
     videoQualities?: {
       url: string;
       quality: "360p" | "480p" | "720p" | "1080p" | "default" | "backup";
@@ -378,8 +378,7 @@ export default function VideoPlayer({
     if (!nextEpisodeInfo) return;
 
     let nextEpisodeId: string = "";
-    let nextEpisode: EpisodeLinksGoGoAnime | EpisodeLinksAnimeWatch | null =
-      null;
+    let nextEpisode: EpisodeLinksGoGoAnime | EpisodeLinksAniwatch | null = null;
 
     switch (mediaSource) {
       case "gogoanime":
@@ -402,7 +401,7 @@ export default function VideoPlayer({
         break;
 
       case "aniwatch":
-        nextEpisodeId = (nextEpisodeInfo as EpisodeAnimeWatch).episodeId;
+        nextEpisodeId = (nextEpisodeInfo as EpisodeAniwatch).episodeId;
 
         nextEpisode = await aniwatch.getEpisodeLink({
           episodeId: nextEpisodeId,

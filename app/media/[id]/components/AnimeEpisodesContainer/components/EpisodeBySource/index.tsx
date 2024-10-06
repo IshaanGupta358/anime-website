@@ -3,7 +3,7 @@ import {
   MediaData,
   MediaDataFullInfo,
 } from "@/app/ts/interfaces/anilistMediaData";
-import { EpisodeAnimeWatch } from "@/app/ts/interfaces/aniwatchData";
+import { EpisodeAniwatch } from "@/app/ts/interfaces/aniwatchData";
 import { GogoanimeMediaEpisodes } from "@/app/ts/interfaces/gogoanimeData";
 import { ImdbEpisode, ImdbMediaInfo } from "@/app/ts/interfaces/imdb";
 import { SourceType } from "@/app/ts/interfaces/episodesSource";
@@ -49,7 +49,7 @@ export function EpisodeBySource({
     | ImdbEpisode
     | EpisodesType
     | GogoanimeMediaEpisodes
-    | EpisodeAnimeWatch;
+    | EpisodeAniwatch;
   currEpisodesSource: SourceType["source"];
   currEpisodesWatched?: {
     mediaId: number;
@@ -105,7 +105,7 @@ export function EpisodeBySource({
           motionStyle={framerMotionEpisodePopup}
           key={index}
           wasEpisodeWatchedOnAnilist={wasEpisodeWatchedOnAnilist}
-          episodeInfo={episodeInfo as EpisodeAnimeWatch}
+          episodeInfo={episodeInfo as EpisodeAniwatch}
           episodeNumber={index + itemOffset + 1}
           episodeDescription={
             imdb.episodesList[index + itemOffset]?.description || undefined

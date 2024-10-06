@@ -10,10 +10,13 @@ import {
   EpisodesType,
 } from "@/app/ts/interfaces/anilistMediaData";
 import PaginationButtons from "@/app/media/[id]/components/PaginationButtons";
-import aniwatch from "@/app/api/aniwatch";
 import {
-  EpisodeAnimeWatch,
-  EpisodesFetchedAnimeWatch,
+  getFromAniwatchOnlyThisData,
+  getMediaEpisodesFromAniwatch,
+} from "@/app/api/aniwatch/aniwatch";
+import {
+  EpisodeAniwatch,
+  EpisodesFetchedAniwatch,
   AniwatchMediaData,
 } from "@/app/ts/interfaces/aniwatchData";
 import { useAuthState } from "react-firebase-hooks/auth";
@@ -28,10 +31,6 @@ import {
 import { initFirebase } from "@/app/firebaseApp";
 import { AnimatePresence, motion, Variants } from "framer-motion";
 import simulateRange from "@/app/lib/simulateRange";
-import {
-  optimizedFetchOnAniwatch,
-  optimizedFetchOnGoGoAnime,
-} from "@/app/lib/dataFetch/optimizedFetchAnimeOptions";
 import { ImdbEpisode, ImdbMediaInfo } from "@/app/ts/interfaces/imdb";
 import { SourceType } from "@/app/ts/interfaces/episodesSource";
 import { checkAnilistTitleMisspelling } from "@/app/lib/checkApiMediaMisspelling";
@@ -40,6 +39,7 @@ import { useAppSelector } from "@/app/lib/redux/hooks";
 import EpisodesOptionsPanel from "./components/EpisodesOptionsPanel";
 import { EpisodeBySource } from "./components/EpisodeBySource";
 import ErrorPanel from "../ErrorPanel";
+import { getMediaEpisodesFromGogoanime } from "@/app/api/consumet/consumetGoGoAnime";
 
 type EpisodesContainerTypes = {
   imdb: {
@@ -78,7 +78,7 @@ export default function EpisodesContainer({
   const [episodesList, setEpisodesList] = useState<
     | EpisodesType[]
     | GogoanimeMediaEpisodes[]
-    | EpisodeAnimeWatch[]
+    | EpisodeAniwatch[]
     | ImdbEpisode[]
   >(crunchyrollInitialEpisodes);
 
@@ -93,7 +93,7 @@ export default function EpisodesContainer({
   const [currAnimesList, setCurrAnimesList] = useState<
     | EpisodesType[]
     | GogoanimeMediaEpisodes[]
-    | EpisodeAnimeWatch[]
+    | EpisodeAniwatch[]
     | ImdbEpisode[]
     | null
   >(null);
@@ -250,7 +250,7 @@ export default function EpisodesContainer({
       | {
           episodesDub: number;
           episodesSub: number;
-          episodes: EpisodesFetchedAnimeWatch["episodes"];
+          episodes: EpisodesFetchedAniwatch["episodes"];
         };
 
     switch (newSourceChose) {
@@ -272,10 +272,9 @@ export default function EpisodesContainer({
       case "gogoanime":
         setCurrEpisodesSource(newSourceChose);
 
-        mediaEpisodesList = (await optimizedFetchOnGoGoAnime({
-          textToSearch: mediaInfo.title.english || mediaInfo.title.romaji,
-          only: "episodes",
-          isDubbed: isEpisodesDubbed || false,
+        mediaEpisodesList = (await getMediaEpisodesFromGogoanime({
+          mediaTitle: mediaInfo.title.english || mediaInfo.title.romaji,
+          onlyDubEpisodes: isEpisodesDubbed || false,
         })) as GogoanimeMediaEpisodes[];
 
         if (!mediaEpisodesList) {
@@ -311,27 +310,27 @@ export default function EpisodesContainer({
       case "aniwatch":
         setCurrEpisodesSource(newSourceChose);
 
-        const searchResultsListForCurrMedia = (await optimizedFetchOnAniwatch({
-          textToSearch: mediaInfo.title.english || mediaInfo.title.romaji,
-          only: "search_list",
-          format: mediaInfo.format,
-          mediaTotalEpisodes:
-            mediaInfo.nextAiringEpisode?.episode || imdb.episodesList.length,
-        })) as AniwatchMediaData[];
+        const searchResultsListForCurrMedia =
+          (await getFromAniwatchOnlyThisData({
+            mediaTitle: mediaInfo.title.english || mediaInfo.title.romaji,
+            typeOfDataWanted: "search_list",
+            mediaFormat: mediaInfo.format,
+            mediaTotalEpisodesNumber:
+              mediaInfo.nextAiringEpisode?.episode || imdb.episodesList.length,
+          })) as AniwatchMediaData[];
 
         setMediaResultsInfoArray(searchResultsListForCurrMedia);
 
-        mediaEpisodesList = (await optimizedFetchOnAniwatch({
-          textToSearch:
-            mediaInfo.title.english || mediaInfo.title.userPreferred,
-          only: "episodes",
-          format: mediaInfo.format,
-          mediaTotalEpisodes:
+        mediaEpisodesList = (await getFromAniwatchOnlyThisData({
+          mediaTitle: mediaInfo.title.english || mediaInfo.title.userPreferred,
+          typeOfDataWanted: "episodes",
+          mediaFormat: mediaInfo.format,
+          mediaTotalEpisodesNumber:
             mediaInfo.nextAiringEpisode?.episode || imdb.episodesList.length,
         })) as {
           episodesDub: number;
           episodesSub: number;
-          episodes: EpisodesFetchedAnimeWatch["episodes"];
+          episodes: EpisodesFetchedAniwatch["episodes"];
         };
 
         const episodesFilteredByDubOrSub = isEpisodesDubbed
@@ -372,9 +371,9 @@ export default function EpisodesContainer({
 
     const endOffset = itemOffset + rangeEpisodesPerPage;
 
-    const mediaEpisodes = (await aniwatch.getMediaEpisodes({
+    const mediaEpisodes = (await getMediaEpisodesFromAniwatch({
       mediaId: id,
-    })) as EpisodesFetchedAnimeWatch;
+    })) as EpisodesFetchedAniwatch;
 
     setEpisodesList(mediaEpisodes.episodes);
 
@@ -482,7 +481,7 @@ export default function EpisodesContainer({
                   episode:
                     | EpisodesType
                     | GogoanimeMediaEpisodes
-                    | EpisodeAnimeWatch
+                    | EpisodeAniwatch
                     | ImdbEpisode,
                   key
                 ) => (

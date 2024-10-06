@@ -9,17 +9,15 @@ import { getAuth, User } from "firebase/auth";
 import { initFirebase } from "@/app/firebaseApp";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { doc, getDoc, getFirestore } from "firebase/firestore";
-import {
-  optimizedFetchOnAniwatch,
-  optimizedFetchOnGoGoAnime,
-} from "@/app/lib/dataFetch/optimizedFetchAnimeOptions";
 import { AnimatePresence, motion } from "framer-motion";
 import { GogoanimeMediaEpisodes } from "@/app/ts/interfaces/gogoanimeData";
-import { EpisodeAnimeWatch } from "@/app/ts/interfaces/aniwatchData";
+import { EpisodeAniwatch } from "@/app/ts/interfaces/aniwatchData";
 import { useAppSelector } from "@/app/lib/redux/hooks";
 import { KeepWatchingMediaData } from "@/app/ts/interfaces/firestoreData";
 import DubbedCheckboxButton from "../AnimeEpisodesContainer/components/ActiveDubbButton";
 import { SourceType } from "@/app/ts/interfaces/episodesSource";
+import { getFromAniwatchOnlyThisData } from "@/app/api/aniwatch/aniwatch";
+import { getMediaEpisodesFromGogoanime } from "@/app/api/consumet/consumetGoGoAnime";
 
 export default function PlayBtn({
   mediaId,
@@ -196,7 +194,7 @@ export default function PlayBtn({
     function findNextEpisode({
       episodes,
     }: {
-      episodes: GogoanimeMediaEpisodes[] | EpisodeAnimeWatch[];
+      episodes: GogoanimeMediaEpisodes[] | EpisodeAniwatch[];
     }) {
       // adds 1 to get the next episode after the last watched
       const nextEpisodeAfterLastWatched = episodes.find(
@@ -208,7 +206,7 @@ export default function PlayBtn({
         setEpisodeId(
           sourceName == "gogoanime"
             ? (nextEpisodeAfterLastWatched as GogoanimeMediaEpisodes)!.id
-            : (nextEpisodeAfterLastWatched as EpisodeAnimeWatch)!.episodeId
+            : (nextEpisodeAfterLastWatched as EpisodeAniwatch)!.episodeId
         );
 
         // adds 1 to get the next episode after the last watched
@@ -223,10 +221,9 @@ export default function PlayBtn({
     }
 
     async function fetchOnGoGoAnime() {
-      const searchResultsForMedia = await optimizedFetchOnGoGoAnime({
-        textToSearch: mediaTitle,
-        only: "episodes",
-        isDubbed: isDubbedActive,
+      const searchResultsForMedia = await getMediaEpisodesFromGogoanime({
+        mediaTitle: mediaTitle,
+        onlyDubEpisodes: isDubbedActive,
       });
 
       setSourceName("gogoanime");
@@ -235,11 +232,11 @@ export default function PlayBtn({
     }
 
     async function fetchOnAniWatch() {
-      const searchResultsForMedia = await optimizedFetchOnAniwatch({
-        textToSearch: mediaTitle,
-        only: "episodes",
+      const searchResultsForMedia = await getFromAniwatchOnlyThisData({
+        mediaTitle: mediaTitle,
+        typeOfDataWanted: "episodes",
         // isDubbed: isDubbedActive,
-        format: mediaFormat,
+        mediaFormat: mediaFormat,
       }).then(
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (res: any) => res.episodes
@@ -251,7 +248,7 @@ export default function PlayBtn({
     }
 
     if (source) {
-      let currMediaInfo: GogoanimeMediaEpisodes[] | EpisodeAnimeWatch[] | null =
+      let currMediaInfo: GogoanimeMediaEpisodes[] | EpisodeAniwatch[] | null =
         null;
 
       switch (source) {
@@ -262,7 +259,7 @@ export default function PlayBtn({
           break;
 
         case "aniwatch":
-          currMediaInfo = (await fetchOnAniWatch()) as EpisodeAnimeWatch[];
+          currMediaInfo = (await fetchOnAniWatch()) as EpisodeAniwatch[];
 
           break;
 
@@ -279,7 +276,7 @@ export default function PlayBtn({
           if (isRedirectingToNextEpisode) return;
         } else {
           setEpisodeId(
-            (currMediaInfo[0] as EpisodeAnimeWatch)?.episodeId ||
+            (currMediaInfo[0] as EpisodeAniwatch)?.episodeId ||
               (currMediaInfo[0] as GogoanimeMediaEpisodes)?.id ||
               null
           );
@@ -291,11 +288,11 @@ export default function PlayBtn({
       return;
     }
 
-    let currMediaEpisodes: GogoanimeMediaEpisodes[] | EpisodeAnimeWatch[] =
+    let currMediaEpisodes: GogoanimeMediaEpisodes[] | EpisodeAniwatch[] =
       (await fetchOnGoGoAnime()) as GogoanimeMediaEpisodes[];
 
     if (!currMediaEpisodes)
-      currMediaEpisodes = (await fetchOnAniWatch()) as EpisodeAnimeWatch[]; // High chances of getting the wrong media
+      currMediaEpisodes = (await fetchOnAniWatch()) as EpisodeAniwatch[]; // High chances of getting the wrong media
 
     if (!currMediaEpisodes) {
       setIsLoading(false);
@@ -319,7 +316,7 @@ export default function PlayBtn({
 
     if (currMediaEpisodes)
       setEpisodeId(
-        (currMediaEpisodes[0] as EpisodeAnimeWatch)?.episodeId ||
+        (currMediaEpisodes[0] as EpisodeAniwatch)?.episodeId ||
           (currMediaEpisodes[0] as GogoanimeMediaEpisodes)?.id ||
           null
       );

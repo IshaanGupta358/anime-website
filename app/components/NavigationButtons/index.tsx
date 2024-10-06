@@ -1,8 +1,8 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import styles from "./component.module.css";
-import aniwatch from "@/app/api/aniwatch";
-import { EpisodeLinksAnimeWatch } from "@/app/ts/interfaces/aniwatchData";
+import aniwatch from "@/app/api/aniwatch/aniwatch";
+import { EpisodeLinksAniwatch } from "@/app/ts/interfaces/aniwatchData";
 import gogoanime from "@/app/api/consumet/consumetGoGoAnime";
 import { EpisodeLinksGoGoAnime } from "@/app/ts/interfaces/gogoanimeData";
 import CloudOfflineSvg from "@/public/assets/cloud-offline.svg";
@@ -66,7 +66,7 @@ export default function NavigationButtons({
         case "aniwatch":
           const aniwatchResponse = (await aniwatch.getEpisodeLink({
             episodeId: "one-piece-100?ep=2142",
-          })) as EpisodeLinksAnimeWatch;
+          })) as EpisodeLinksAniwatch;
 
           setAniwatchAvailable(aniwatchResponse != null ? true : false);
 

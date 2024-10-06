@@ -1,4 +1,4 @@
-export interface MediaInfoFetchedAnimeWatch {
+export interface MediaInfoFetchedAniwatch {
   animes: AniwatchMediaData[];
 }
 
@@ -25,7 +25,7 @@ export interface MediaInfoAniwatchSuggestions {
   moreInfo: string[];
 }
 
-export interface EpisodeLinksAnimeWatch {
+export interface EpisodeLinksAniwatch {
   tracks: [
     {
       file: string;
@@ -50,14 +50,14 @@ export interface EpisodeLinksAnimeWatch {
   ];
 }
 
-export interface EpisodesFetchedAnimeWatch {
+export interface EpisodesFetchedAniwatch {
   episodesDub: number;
   episodesSub: number;
   totalEpisodes: number;
-  episodes: EpisodeAnimeWatch[];
+  episodes: EpisodeAniwatch[];
 }
 
-export interface EpisodeAnimeWatch {
+export interface EpisodeAniwatch {
   title: string;
   episodeId: string;
   number: number;

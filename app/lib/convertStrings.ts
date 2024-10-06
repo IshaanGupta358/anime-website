@@ -11,3 +11,5 @@ export default function stringToOnlyAlphabetic(text: string) {
 
   return newText;
 }
+
+// erase later

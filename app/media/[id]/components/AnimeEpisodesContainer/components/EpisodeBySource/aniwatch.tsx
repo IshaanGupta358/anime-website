@@ -4,11 +4,11 @@ import Image from "next/image";
 import styles from "./component.module.css";
 import placeholderImg from "@/public/photo-placeholder.jpg";
 import MarkEpisodeAsWatchedButton from "@/app/components/Buttons/MarkEpisodeAsWatched";
-import { EpisodeAnimeWatch } from "@/app/ts/interfaces/aniwatchData";
+import { EpisodeAniwatch } from "@/app/ts/interfaces/aniwatchData";
 import { motion, Variants } from "framer-motion";
 
 type ComponentTypes = {
-  episodeInfo: EpisodeAnimeWatch;
+  episodeInfo: EpisodeAniwatch;
   mediaId: number;
   episodeNumber: number;
   episodeImg?: string;

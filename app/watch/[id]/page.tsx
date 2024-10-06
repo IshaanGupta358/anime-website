@@ -4,7 +4,7 @@ import {
   MediaData,
   MediaDataFullInfo,
 } from "../../ts/interfaces/anilistMediaData";
-import gogoanime from "@/app/api/consumet/consumetGoGoAnime";
+import { getEpisodeStreamingLinkFromGogoanime, getMediaEpisodesFromGogoanime } from "@/app/api/consumet/consumetGoGoAnime";
 import anilist from "@/app/api/anilist/anilistMedias";
 import * as MediaCardExpanded from "@/app/components/MediaCards/MediaInfoExpandedWithCover";
 import {
@@ -13,22 +13,21 @@ import {
 } from "@/app/ts/interfaces/gogoanimeData";
 import EpisodesListContainer from "./components/EpisodesListContainer";
 import CommentsSection from "@/app/components/CommentsSection";
-import aniwatch from "@/app/api/aniwatch";
 import VideoPlayer from "./components/VideoPlayer";
 import {
-  EpisodeAnimeWatch,
-  EpisodeLinksAnimeWatch,
+  EpisodeAniwatch,
+  EpisodeLinksAniwatch,
 } from "@/app/ts/interfaces/aniwatchData";
-import {
-  optimizedFetchOnAniwatch,
-  optimizedFetchOnGoGoAnime,
-} from "@/app/lib/dataFetch/optimizedFetchAnimeOptions";
 import { ImdbEpisode, ImdbMediaInfo } from "@/app/ts/interfaces/imdb";
 import { getMediaInfoOnIMDB } from "@/app/api/consumet/consumetImdb";
 import { SourceType } from "@/app/ts/interfaces/episodesSource";
 import { FetchEpisodeError } from "@/app/components/MediaFetchErrorPage";
 import { cookies } from "next/headers";
 import { AlertWrongMediaVideoOnMediaId } from "./components/AlertContainer";
+import {
+  getEpisodeLinkFromAniwatch,
+  getFromAniwatchOnlyThisData,
+} from "@/app/api/aniwatch/aniwatch";
 
 export const revalidate = 900; // revalidate cached data every 15 minutes
 
@@ -66,14 +65,14 @@ export async function generateMetadata({
     description: !mediaInfo
       ? ""
       : `Watch ${mediaInfo.title.userPreferred}${
-        mediaInfo.format != "MOVIE"
-          ? ` - episode ${searchParams.episode} `
-          : ""
-      }${searchParams.dub ? "Dubbed" : ""}. ${
-        mediaInfo.description
-          ? mediaInfo.description.replace(/(<([^>]+)>)/gi, "")
-          : ""
-      }`,
+          mediaInfo.format != "MOVIE"
+            ? ` - episode ${searchParams.episode} `
+            : ""
+        }${searchParams.dub ? "Dubbed" : ""}. ${
+          mediaInfo.description
+            ? mediaInfo.description.replace(/(<([^>]+)>)/gi, "")
+            : ""
+        }`,
   };
 }
 
@@ -116,15 +115,12 @@ export default async function WatchEpisode({
       <FetchEpisodeError mediaId={params.id} searchParams={searchParams} />
     );
 
-  let episodeDataFetched:
-    | EpisodeLinksGoGoAnime
-    | EpisodeLinksAnimeWatch
-    | null = null;
-  let episodeSubtitles: EpisodeLinksAnimeWatch["tracks"] | undefined =
-    undefined;
+  let episodeDataFetched: EpisodeLinksGoGoAnime | EpisodeLinksAniwatch | null =
+    null;
+  let episodeSubtitles: EpisodeLinksAniwatch["tracks"] | undefined = undefined;
   const subtitleLanguage =
     cookies().get("subtitle_language")?.value || "English";
-  let episodesList: EpisodeAnimeWatch[] | GogoanimeMediaEpisodes[] = [];
+  let episodesList: EpisodeAniwatch[] | GogoanimeMediaEpisodes[] = [];
   let videoUrlSrc: string | undefined = undefined;
   let imdbEpisodeInfo: ImdbEpisode | undefined;
   const imdbEpisodesList: ImdbEpisode[] = [];
@@ -147,7 +143,7 @@ export default async function WatchEpisode({
   };
 
   async function getGogoanimeStreamingLink() {
-    episodeDataFetched = (await gogoanime.getEpisodeStreamingLinks({
+    episodeDataFetched = (await getEpisodeStreamingLinkFromGogoanime({
       episodeId: searchParams.q,
       useAlternateLinkOption: true,
     })) as EpisodeLinksGoGoAnime;
@@ -165,10 +161,9 @@ export default async function WatchEpisode({
     if (!videoUrlSrc) videoUrlSrc = episodeDataFetched.sources[0].url;
 
     // Episodes for this media
-    episodesList = (await optimizedFetchOnGoGoAnime({
-      textToSearch: mediaInfo.title.english || mediaInfo.title.romaji,
-      only: "episodes",
-      isDubbed: searchParams.dub == "true",
+    episodesList = (await getMediaEpisodesFromGogoanime({
+      mediaTitle: mediaInfo.title.english || mediaInfo.title.romaji,
+      onlyDubEpisodes: searchParams.dub == "true",
     })) as GogoanimeMediaEpisodes[];
 
     videoIdDoesntMatch = compareEpisodeIDs(episodesList, "gogoanime");
@@ -176,20 +171,20 @@ export default async function WatchEpisode({
 
   async function getAniwatchStreamingLink() {
     if (!searchParams.q) {
-      episodesList = (await optimizedFetchOnAniwatch({
-        textToSearch: mediaInfo.title.english || mediaInfo.title.romaji,
-        only: "episodes",
+      episodesList = (await getFromAniwatchOnlyThisData({
+        mediaTitle: mediaInfo.title.english || mediaInfo.title.romaji,
+        typeOfDataWanted: "episodes",
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      }).then((res: any) => res?.episodes)) as EpisodeAnimeWatch[];
+      }).then((res: any) => res?.episodes)) as EpisodeAniwatch[];
 
       searchParams.q = episodesList[0].episodeId;
     }
 
     // fetch episode data
-    episodeDataFetched = (await aniwatch.getEpisodeLink({
+    episodeDataFetched = (await getEpisodeLinkFromAniwatch({
       episodeId: searchParams.q,
       category: searchParams.dub == "true" ? "dub" : "sub",
-    })) as EpisodeLinksAnimeWatch;
+    })) as EpisodeLinksAniwatch;
 
     if (!episodeDataFetched) hadFetchError = true;
 
@@ -198,17 +193,17 @@ export default async function WatchEpisode({
 
     // fetch episodes for this media
     if (episodesList.length == 0) {
-      episodesList = (await optimizedFetchOnAniwatch({
-        textToSearch: mediaInfo.title.english || mediaInfo.title.romaji,
-        only: "episodes",
-        format: mediaInfo.format,
-        idToMatch: searchParams?.q?.split("?")[0],
+      episodesList = (await getFromAniwatchOnlyThisData({
+        mediaTitle: mediaInfo.title.english || mediaInfo.title.romaji,
+        typeOfDataWanted: "episodes",
+        mediaFormat: mediaInfo.format,
+        mediaId: searchParams?.q?.split("?")[0],
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
       }).then((res: any) =>
         searchParams?.dub == "true"
           ? res?.episodes.slice(0, res.episodesDub)
           : res?.episodes
-      )) as EpisodeAnimeWatch[];
+      )) as EpisodeAniwatch[];
     }
 
     episodeSubtitles = episodeDataFetched.tracks;
@@ -272,9 +267,8 @@ export default async function WatchEpisode({
         mediaInfo.title.romaji
       );
     } else {
-      return (
-        episodesList[Number(searchParams.episode) - 1] as EpisodeAnimeWatch
-      )?.title;
+      return (episodesList[Number(searchParams.episode) - 1] as EpisodeAniwatch)
+        ?.title;
     }
   };
 
@@ -319,10 +313,9 @@ export default async function WatchEpisode({
               episodeId: searchParams.q,
               episodeIntro:
                 searchParams.source == "aniwatch"
-                  ? (episodeDataFetched as EpisodeLinksAnimeWatch).intro
+                  ? (episodeDataFetched as EpisodeLinksAniwatch).intro
                   : undefined,
-              episodeOutro: (episodeDataFetched as EpisodeLinksAnimeWatch)
-                ?.outro,
+              episodeOutro: (episodeDataFetched as EpisodeLinksAniwatch)?.outro,
               episodeNumber: searchParams.episode,
               episodeImg:
                 imdbEpisodesList[Number(searchParams.episode) - 1]?.img?.hd ||

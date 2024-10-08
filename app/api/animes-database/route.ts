@@ -1,82 +1,83 @@
 import { NextRequest, NextResponse } from "next/server";
-import AnimeDataOffline from "./anime-offline-database.json";
-import { MediaOnJSONFile } from "@/app/ts/interfaces/jsonMediaData";
+import AnimeOfflineDatabase from "./anime-offline-database.json";
+import { MediaOnOfflineDBFile } from "@/app/ts/interfaces/jsonMediaData";
+import {
+  filterByGenre,
+  filterBySeason,
+  filterByStatus,
+  filterByTitle,
+  filterByType,
+  filterByYear,
+  filterMediasWithAnilistID,
+} from "./filterFunctions";
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
 
   const resultsLimit = 12;
 
-  let dataToBeSorted: MediaOnJSONFile[] = (
-    AnimeDataOffline as { data: MediaOnJSONFile[] }
-  ).data;
+  let requestedData = (AnimeOfflineDatabase as { data: MediaOnOfflineDBFile[] })
+    .data;
 
-  if (searchParams.get("type")) {
-    dataToBeSorted = dataToBeSorted.filter(
-      (media) => media.type == searchParams.get("type")!.toUpperCase()
+  if (searchParams.get("type"))
+    requestedData = filterByType(
+      requestedData,
+      searchParams.get("type")!.toUpperCase()
     );
-  }
 
-  if (searchParams.get("year")) {
-    dataToBeSorted = dataToBeSorted.filter(
-      (media) => media.animeSeason.year == Number(searchParams.get("year"))
+  if (searchParams.get("year"))
+    requestedData = filterByYear(
+      requestedData,
+      Number(searchParams.get("year"))
     );
-  }
 
-  if (searchParams.get("genre")) {
-    dataToBeSorted = dataToBeSorted.filter((media) =>
-      media.tags.some((genreName) =>
-        searchParams.get("genre")!.includes(genreName)
-      )
-    );
-  }
+  if (searchParams.get("genre"))
+    requestedData = filterByGenre(requestedData, searchParams.get("genre")!);
 
-  if (searchParams.get("status")) {
-    dataToBeSorted = dataToBeSorted.filter(
-      (media) => media.status == searchParams.get("status")!.toUpperCase()
+  if (searchParams.get("status"))
+    requestedData = filterByStatus(
+      requestedData,
+      searchParams.get("status")!.toUpperCase()
     );
-  }
 
   if (searchParams.get("title")) {
-    dataToBeSorted = dataToBeSorted.filter((media) =>
-      media.title
-        .toLowerCase()
-        .includes(searchParams.get("title")!.toLowerCase())
+    requestedData = filterByTitle(
+      requestedData,
+      searchParams.get("title")!.toLowerCase()
     );
   }
 
   if (searchParams.get("season")) {
-    dataToBeSorted = dataToBeSorted.filter(
-      (media) =>
-        media.animeSeason.season.toLocaleLowerCase() ==
-        searchParams.get("season")?.toLocaleLowerCase()
+    requestedData = filterBySeason(
+      requestedData,
+      searchParams.get("season")!.toLocaleLowerCase()
     );
   }
 
   switch (searchParams.get("sort")) {
     case "releases_desc":
-      dataToBeSorted = dataToBeSorted
+      requestedData = requestedData
         .sort((a, b) => a.animeSeason.year - b.animeSeason.year)
         .reverse();
 
       break;
 
     case "releases_asc":
-      dataToBeSorted = dataToBeSorted.sort(
+      requestedData = requestedData.sort(
         (a, b) => a.animeSeason.year - b.animeSeason.year
       );
 
       break;
 
     case "title_desc":
-      dataToBeSorted = dataToBeSorted.sort((a, b) =>
+      requestedData = requestedData.sort((a, b) =>
         a.title > b.title ? -1 : 1
       );
 
       break;
 
     case "title_asc":
-      dataToBeSorted = dataToBeSorted
+      requestedData = requestedData
         .sort((a, b) => (a.title > b.title ? -1 : 1))
         .reverse();
 
@@ -86,26 +87,10 @@ export async function GET(request: NextRequest) {
       break;
   }
 
-  const totalResultsLength = dataToBeSorted.length;
+  if (requestedData.length > 0)
+    requestedData = filterMediasWithAnilistID(requestedData);
 
-  // GET ANILIST ID FOR EACH MEDIA
-  if (dataToBeSorted.length > 0) {
-    const mediasWithAnilistId = dataToBeSorted
-      .filter((media) =>
-        media.sources.map((source) => {
-          if (source.includes("https://anilist.co/anime")) {
-            const urlWithAnilistId = source.slice(source.search(/\banime\b/));
-
-            media.anilistId = urlWithAnilistId!.slice(6);
-          }
-        })
-      )
-      .filter((item) => item.anilistId);
-
-    dataToBeSorted = mediasWithAnilistId;
-  }
-
-  const resultsLimitedByPage = dataToBeSorted.slice(
+  const resultsLimitedByPage = requestedData.slice(
     0,
     resultsLimit * Number(searchParams.get("page") || 1)
   );
@@ -113,8 +98,8 @@ export async function GET(request: NextRequest) {
   return NextResponse.json(
     {
       data: resultsLimitedByPage,
-      allResultsLength: totalResultsLength,
-      lastUpdate: (AnimeDataOffline as { lastUpdate: string }).lastUpdate,
+      allResultsLength: requestedData.length,
+      lastUpdate: (AnimeOfflineDatabase as { lastUpdate: string }).lastUpdate,
     },
     {
       status: 200,

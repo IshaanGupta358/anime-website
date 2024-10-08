@@ -10,7 +10,7 @@ import CloseSvg from "@/public/assets/x.svg";
 import { AnimatePresence, motion } from "framer-motion";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { getAuth } from "firebase/auth";
-import { MediaOnJSONFile } from "@/app/ts/interfaces/jsonMediaData";
+import { MediaOnOfflineDBFile } from "@/app/ts/interfaces/jsonMediaData";
 import { getUserAdultContentPreference } from "@/app/lib/user/userDocFetchOptions";
 import { useAppSelector } from "@/app/lib/redux/hooks";
 
@@ -43,7 +43,7 @@ function SearchFormContainer() {
   );
 
   const [searchResultsList, setSearchResultsList] = useState<
-    MediaData[] | MediaOnJSONFile[] | null
+    MediaData[] | MediaOnOfflineDBFile[] | null
   >();
 
   const [searchInputValue, setSearchInputValue] = useState<string>("");
@@ -219,7 +219,7 @@ function SearchFormContainer() {
               )}
 
               {searchResultsList.map(
-                (item: MediaData | MediaOnJSONFile, key: number) => (
+                (item: MediaData | MediaOnOfflineDBFile, key: number) => (
                   <SearchResultItemCard
                     key={key}
                     mediaFromAnilist={
@@ -227,7 +227,7 @@ function SearchFormContainer() {
                     }
                     mediaFromOfflineDB={
                       searchType == "json-database"
-                        ? (item as MediaOnJSONFile)
+                        ? (item as MediaOnOfflineDBFile)
                         : undefined
                     }
                     handleChoseResult={() =>

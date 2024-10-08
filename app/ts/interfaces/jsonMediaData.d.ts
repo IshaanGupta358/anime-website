@@ -1,4 +1,4 @@
-export interface MediaOnJSONFile {
+export interface MediaOnOfflineDBFile {
   title: string;
   description: ""; // undefined
   thumbnail: string;

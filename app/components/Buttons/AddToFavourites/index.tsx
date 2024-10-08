@@ -15,7 +15,7 @@ import { useAppDispatch, useAppSelector } from "@/app/lib/redux/hooks";
 import anilistUsers from "@/app/api/anilist/anilistUsers";
 import { toggleShowLoginModalValue } from "@/app/lib/redux/features/loginModal";
 import { KeepWatchingMediaData } from "@/app/ts/interfaces/firestoreData";
-import { MediaOnJSONFile } from "@/app/ts/interfaces/jsonMediaData";
+import { MediaOnOfflineDBFile } from "@/app/ts/interfaces/jsonMediaData";
 
 export function Button({
   mediaInfo,
@@ -24,7 +24,7 @@ export function Button({
   isActiveOnAnilist,
   customText,
 }: {
-  mediaInfo: MediaData | MediaOnJSONFile | KeepWatchingMediaData;
+  mediaInfo: MediaData | MediaOnOfflineDBFile | KeepWatchingMediaData;
   children?: React.ReactNode[];
   svgOnlyColor?: string;
   isActiveOnAnilist?: boolean;
@@ -119,11 +119,11 @@ export function Button({
       title={
         wasAddedToFavourites
           ? `Remove ${
-            mediaInfo.title && mediaInfo.title?.userPreferred
-          } from Favourites`
+              mediaInfo.title && mediaInfo.title?.userPreferred
+            } from Favourites`
           : `Add ${
-            mediaInfo.title && mediaInfo.title?.userPreferred
-          } To Favourites`
+              mediaInfo.title && mediaInfo.title?.userPreferred
+            } To Favourites`
       }
     >
       {isLoading && <LoadingSvg alt="Loading Icon" width={16} height={16} />}

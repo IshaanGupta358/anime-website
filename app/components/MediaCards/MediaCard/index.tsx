@@ -6,7 +6,7 @@ import { MediaData } from "@/app/ts/interfaces/anilistMediaData";
 import MediaTypeIconSpan from "./MediaTypeIconSpan";
 import MediaActionOptionsButton from "./MediaActionOptionsButton";
 import { KeepWatchingMediaData } from "@/app/ts/interfaces/firestoreData";
-import { MediaOnJSONFile } from "@/app/ts/interfaces/jsonMediaData";
+import { MediaOnOfflineDBFile } from "@/app/ts/interfaces/jsonMediaData";
 
 type ComponentTypes = {
   children: React.ReactNode;
@@ -107,7 +107,7 @@ export function MediaImgLink({
   mediaId: number | string;
   formatOrType: MediaData["format"];
   title: string;
-  mediaInfo: MediaData | MediaOnJSONFile | KeepWatchingMediaData;
+  mediaInfo: MediaData | MediaOnOfflineDBFile | KeepWatchingMediaData;
   hideOptionsButton?: boolean;
 }) {
   return (

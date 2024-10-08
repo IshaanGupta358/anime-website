@@ -20,7 +20,7 @@ import { MediaData } from "@/app/ts/interfaces/anilistMediaData";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { KeepWatchingMediaData } from "@/app/ts/interfaces/firestoreData";
-import { MediaOnJSONFile } from "@/app/ts/interfaces/jsonMediaData";
+import { MediaOnOfflineDBFile } from "@/app/ts/interfaces/jsonMediaData";
 
 const framerMotionOpenPanelTransition = {
   initial: {
@@ -52,7 +52,7 @@ export default function OptionsPanel({
   isFavourite: boolean | undefined;
   mediaListEntryInfo: MediaData["mediaListEntry"] | null;
   mediaTitle: MediaData["title"];
-  mediaInfo: MediaData | MediaOnJSONFile | KeepWatchingMediaData;
+  mediaInfo: MediaData | MediaOnOfflineDBFile | KeepWatchingMediaData;
   toggleLoginModalVisibility: () => void;
   amountWatchedOrRead?: number;
 }) {

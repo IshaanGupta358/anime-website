@@ -3,12 +3,12 @@ import styles from "./component.module.css";
 import Image from "next/image";
 import { MediaData } from "@/app/ts/interfaces/anilistMediaData";
 import Link from "next/link";
-import { MediaOnJSONFile } from "@/app/ts/interfaces/jsonMediaData";
+import { MediaOnOfflineDBFile } from "@/app/ts/interfaces/jsonMediaData";
 
 type SearchResultsTypes = {
   handleChoseResult?: MouseEventHandler<HTMLDivElement>;
   mediaFromAnilist?: MediaData;
-  mediaFromOfflineDB?: MediaOnJSONFile;
+  mediaFromOfflineDB?: MediaOnOfflineDBFile;
 };
 
 function SearchResultItemCard({

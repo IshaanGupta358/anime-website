@@ -8,12 +8,12 @@ import OptionsPanel from "./OptionsPanel";
 import { useAppDispatch } from "@/app/lib/redux/hooks";
 import { toggleShowLoginModalValue } from "@/app/lib/redux/features/loginModal";
 import { KeepWatchingMediaData } from "@/app/ts/interfaces/firestoreData";
-import { MediaOnJSONFile } from "@/app/ts/interfaces/jsonMediaData";
+import { MediaOnOfflineDBFile } from "@/app/ts/interfaces/jsonMediaData";
 
 export default function MediaActionOptionsButton({
   mediaInfo,
 }: {
-  mediaInfo: MediaData | MediaOnJSONFile | KeepWatchingMediaData;
+  mediaInfo: MediaData | MediaOnOfflineDBFile | KeepWatchingMediaData;
 }) {
   const [isPanelOpen, setIsPanelOpen] = useState<boolean>(false);
 

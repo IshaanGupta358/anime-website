@@ -72,8 +72,8 @@ export const getMediaEpisodesFromGogoanime = cache(
     onlyDubEpisodes?: boolean;
   }) => {
     mediaTitle = checkAnilistTitleMisspelling(mediaTitle).replace(
-      /^[a-zA-Z0-9-]*$/,
-      ""
+      /[^a-zA-Z0-9]/g,
+      " "
     ); // handles any non url friendly char
 
     const resultsForMediaSearch = await searchMediaOnGogoanime({
@@ -88,11 +88,8 @@ export const getMediaEpisodesFromGogoanime = cache(
       } else {
         closestResultsByMediaTitle =
           (res as GogoanimeMediaSearchResult[])!.filter(
-            (media) =>
-              media.title
-                .replace(/^[a-zA-Z0-9-]*$/, "")
-                .toLowerCase()
-                .indexOf(mediaTitle) !== -1
+            (media) => media.title.replace(/[^a-zA-Z0-9]/g, " ").toLowerCase()
+            // .indexOf(mediaTitle) !== -1
           );
       }
 

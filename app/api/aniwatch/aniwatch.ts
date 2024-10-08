@@ -95,8 +95,8 @@ export const getFromAniwatchOnlyThisData = cache(
     mediaId?: string | number;
   }) => {
     mediaTitle = checkAnilistTitleMisspelling(mediaTitle).replace(
-      /^[a-zA-Z0-9-]*$/,
-      ""
+      /[^a-zA-Z0-9]/g,
+      " "
     ); // handles any non url friendly char
 
     const resultsForMediaSearch = (await searchMediaOnAniwatch({
@@ -109,7 +109,7 @@ export const getFromAniwatchOnlyThisData = cache(
       // filter by media name
       mediasList = searchedMediasListFromAniwatch.filter((media) =>
         media.name
-          .replace(/^[a-zA-Z0-9-]*$/, "")
+          .replace(/[^a-zA-Z0-9]/g, " ")
           .toLowerCase()
           .includes(mediaTitle)
       );
